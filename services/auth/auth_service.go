@@ -79,3 +79,23 @@ func (s *AuthService) RefreshToken(dto dtos.RefreshTokenDTO) (*dtos.TokenPairDTO
 		RefreshToken: refreshToken,
 	}, nil
 }
+
+// Me retrieves the authenticated user's details.
+func (s *AuthService) Me(userID uint) (*dtos.UserDTO, error) {
+	user, err := s.userRepository.FindByID(userID)
+	if err != nil {
+		return nil, err
+	}
+	if user == nil {
+		return nil, ErrUserNotFound
+	}
+
+	return &dtos.UserDTO{
+		ID:          user.ID,
+		Name:        user.Name,
+		Email:       user.Email,
+		PhoneNumber: user.PhoneNumber,
+		CreatedAt:   user.CreatedAt,
+		UpdatedAt:   user.UpdatedAt,
+	}, nil
+}

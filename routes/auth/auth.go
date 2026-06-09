@@ -1,7 +1,9 @@
 package auth
+
 import (
 	"github.com/gin-gonic/gin"
 	authCtrl "github.com/mizanalyst/mizanalyst/controllers/auth"
+	"github.com/mizanalyst/mizanalyst/middleware"
 )
 
 func RegisterAuthRoutes(router *gin.RouterGroup) {
@@ -13,10 +15,10 @@ func RegisterAuthRoutes(router *gin.RouterGroup) {
 		auth.POST("/refresh", authController.RefreshToken)
 	}
 
-	// Example: protected routes (uncomment and add handlers as needed)
-	// protected := api.Group("/")
-	// protected.Use(middleware.AuthMiddleware())
-	// {
-	//     // protected.GET("/profile", profileController.GetProfile)
-	// }
+	// Protected routes
+	protected := auth.Group("")
+	protected.Use(middleware.AuthMiddleware())
+	{
+		protected.GET("/me", authController.Me)
+	}
 }

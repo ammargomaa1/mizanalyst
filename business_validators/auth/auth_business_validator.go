@@ -26,3 +26,8 @@ func (bv *AuthBusinessValidator) ValidateRefreshToken(dto dtos.RefreshTokenDTO) 
 	// - Check if refresh token has been revoked
 	return nil
 }
+
+// ValidateMe performs business-rule validations on the me request.
+func (bv *AuthBusinessValidator) ValidateMe(userID uint) error {
+	return nil
+}

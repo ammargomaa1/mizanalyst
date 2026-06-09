@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	bv "github.com/mizanalyst/mizanalyst/business_validators/auth"
 	"github.com/mizanalyst/mizanalyst/mizanlyst_logger"
+	"github.com/mizanalyst/mizanalyst/requests"
 	authReq "github.com/mizanalyst/mizanalyst/requests/auth"
 	"github.com/mizanalyst/mizanalyst/responses"
 	authSvc "github.com/mizanalyst/mizanalyst/services/auth"
@@ -83,4 +84,35 @@ func (ctrl *AuthController) RefreshToken(c *gin.Context) {
 
 	// 4. Success response
 	responses.OKWithBody(c, "Token refreshed successfully", tokenPair)
+}
+
+// Me handles GET /api/v1/auth/me
+func (ctrl *AuthController) Me(c *gin.Context) {
+	// 1. Request chain: Retrieve User ID
+	var userID uint
+	retriever := &requests.RequestUserIdRetriever{UserID: &userID}
+	if !requests.RunChain(c, retriever) {
+		return
+	}
+
+	// 2. Business validation
+	if err := ctrl.businessValidator.ValidateMe(userID); err != nil {
+		responses.BadRequest(c, err.Error())
+		return
+	}
+
+	// 3. Service call
+	userDTO, err := ctrl.service.Me(userID)
+	if err != nil {
+		if errors.Is(err, authSvc.ErrUserNotFound) {
+			responses.Unauthorized(c, err.Error())
+			return
+		}
+		mizanlyst_logger.Log("Me error: %v", err)
+		responses.BadRequest(c, "An error occurred while fetching user details")
+		return
+	}
+
+	// 4. Success response
+	responses.OKWithBody(c, "User details retrieved successfully", userDTO)
 }
